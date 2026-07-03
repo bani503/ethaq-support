@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
+import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
 import { theme } from "@/src/theme";
 import { SURAHS } from "@/src/data/surahs";
 
@@ -17,6 +18,11 @@ interface Ayah {
   number: number;
   numberInSurah: number;
   text: string;
+}
+
+function surahAudioUrl(num: number): string {
+  // Mishary Alafasy — MP3Quran CDN
+  return `https://server8.mp3quran.net/afs/${String(num).padStart(3, "0")}.mp3`;
 }
 
 export default function SurahReader() {
@@ -27,6 +33,9 @@ export default function SurahReader() {
   const [ayahs, setAyahs] = useState<Ayah[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const player = useAudioPlayer(surahAudioUrl(surahNum));
+  const status = useAudioPlayerStatus(player);
 
   useEffect(() => {
     (async () => {
@@ -48,7 +57,28 @@ export default function SurahReader() {
     })();
   }, [surahNum]);
 
+  useEffect(() => {
+    return () => {
+      try { player.pause(); } catch {}
+    };
+  }, [player]);
+
   const showBasmalah = surahNum !== 1 && surahNum !== 9;
+  const isPlaying = status?.playing ?? false;
+
+  const togglePlay = () => {
+    try {
+      if (isPlaying) player.pause();
+      else player.play();
+    } catch {}
+  };
+
+  const stop = () => {
+    try {
+      player.pause();
+      player.seekTo(0);
+    } catch {}
+  };
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]} testID="surah-reader">
@@ -62,6 +92,23 @@ export default function SurahReader() {
           <Text style={styles.subtitle}>{meta?.type} · {meta?.ayah} آية</Text>
         </View>
         <View style={{ width: 40 }} />
+      </View>
+
+      {/* Audio bar */}
+      <View style={styles.audioBar}>
+        <View style={styles.reciterInfo}>
+          <Ionicons name="musical-notes" size={16} color={theme.colors.gold} />
+          <Text style={styles.reciterName}>الشيخ مشاري العفاسي</Text>
+        </View>
+        <View style={styles.audioBtns}>
+          <TouchableOpacity onPress={stop} style={styles.audioBtnSecondary} testID="audio-stop">
+            <Ionicons name="stop" size={16} color={theme.colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={togglePlay} style={styles.audioBtnPrimary} testID="audio-toggle">
+            <Ionicons name={isPlaying ? "pause" : "play"} size={18} color="#fff" />
+            <Text style={styles.audioBtnText}>{isPlaying ? "إيقاف" : "استماع"}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -103,10 +150,7 @@ export default function SurahReader() {
 
 function toArabicNumber(n: number): string {
   const digits = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
-  return String(n)
-    .split("")
-    .map((d) => digits[parseInt(d, 10)] || d)
-    .join("");
+  return String(n).split("").map((d) => digits[parseInt(d, 10)] || d).join("");
 }
 
 const styles = StyleSheet.create({
@@ -121,6 +165,34 @@ const styles = StyleSheet.create({
   backBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
   title: { fontSize: 20, fontFamily: theme.fonts.serif, fontWeight: "700", color: theme.colors.primary },
   subtitle: { fontSize: 11, color: theme.colors.textSecondary, marginTop: 2 },
+  audioBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: theme.colors.primary,
+    marginHorizontal: 16,
+    borderRadius: theme.radius.md,
+    padding: 10,
+    marginBottom: 12,
+  },
+  reciterInfo: { flexDirection: "row", alignItems: "center", gap: 6 },
+  reciterName: { color: "#fff", fontSize: 12, fontWeight: "600" },
+  audioBtns: { flexDirection: "row", gap: 8 },
+  audioBtnSecondary: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center", justifyContent: "center",
+  },
+  audioBtnPrimary: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: theme.colors.gold,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+  },
+  audioBtnText: { color: "#fff", fontWeight: "700", fontSize: 13 },
   content: { padding: 16, paddingBottom: 40 },
   center: { padding: 40, alignItems: "center", justifyContent: "center" },
   error: { color: theme.colors.danger, fontSize: 14 },
@@ -147,15 +219,6 @@ const styles = StyleSheet.create({
     textAlign: "right",
     writingDirection: "rtl",
   },
-  ayahText: {
-    fontSize: 22,
-    lineHeight: 46,
-    fontFamily: theme.fonts.serif,
-    color: theme.colors.textPrimary,
-  },
-  ayahNum: {
-    color: theme.colors.gold,
-    fontSize: 16,
-    fontWeight: "700",
-  },
+  ayahText: { fontSize: 22, lineHeight: 46, fontFamily: theme.fonts.serif, color: theme.colors.textPrimary },
+  ayahNum: { color: theme.colors.gold, fontSize: 16, fontWeight: "700" },
 });

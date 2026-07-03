@@ -24,6 +24,7 @@ import {
   toArabicMonth,
   type PrayerData,
 } from "@/src/utils/prayer";
+import { getAdhanSettings, scheduleAdhanForTimings } from "@/src/utils/adhan";
 
 const HERO_IMAGE = { uri: "https://images.unsplash.com/photo-1554147090-e1221a04a025?w=1200" };
 
@@ -66,6 +67,14 @@ export default function HomeScreen() {
       setCityName(city);
       const data = await fetchPrayerTimes(lat, lng);
       setPrayerData(data);
+
+      // Schedule adhan/iqamah notifications for today's remaining prayers
+      try {
+        const s = await getAdhanSettings();
+        await scheduleAdhanForTimings(data.timings, s);
+      } catch (e) {
+        console.log("adhan schedule error", e);
+      }
 
       // Hadith
       try {
@@ -197,8 +206,29 @@ export default function HomeScreen() {
         </View>
 
         {/* Bento grid */}
-        <Text style={styles.sectionTitle}>الخدمات</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>الخدمات</Text>
+          <TouchableOpacity onPress={() => router.push("/settings")} testID="header-settings">
+            <Ionicons name="settings-outline" size={20} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
         <View style={styles.bento}>
+          <BentoCard
+            title="مفكرة الصلوات"
+            subtitle="تتبّع صلواتك"
+            icon="calendar-outline"
+            color={theme.colors.primary}
+            onPress={() => router.push("/tracker")}
+            testID="bento-tracker"
+          />
+          <BentoCard
+            title="الأربعون النووية"
+            subtitle="40 حديث"
+            icon="library-outline"
+            color={theme.colors.gold}
+            onPress={() => router.push("/nawawi")}
+            testID="bento-nawawi"
+          />
           <BentoCard
             title="المسبحة"
             subtitle="سبّح واذكر"
@@ -217,7 +247,7 @@ export default function HomeScreen() {
           />
           <BentoCard
             title="القرآن"
-            subtitle="اقرأ وتدبّر"
+            subtitle="اقرأ واستمع"
             icon="book-outline"
             color={theme.colors.primary}
             onPress={() => router.push("/(tabs)/quran")}
@@ -452,11 +482,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
     textAlign: "right",
   },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
     color: theme.colors.textPrimary,
-    marginBottom: 12,
     textAlign: "right",
   },
   bento: {
