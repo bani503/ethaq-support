@@ -1,0 +1,41 @@
+{
+  "summary": "Phase 2 backend tests (auth via Emergent, Stripe subscription checkout, Stripe webhook, dedications with 5/mo quota for non-subscribers, family أسرة إيثاق, and v1 regression) — 28/28 PASSED (100%). Seeded fake users + user_sessions directly in MongoDB (per main agent guidance) to exercise all Bearer-protected endpoints. Verified: invalid Emergent session_token → 401; auth/me with token returns sanitized user (no _id, subscription_status='inactive'); logout deletes session (subsequent /auth/me → 401); checkout monthly & yearly both return Stripe checkout_url (Stripe test key sk_test_emergent works); invalid plan → 400; subscription/status returns {active:false, plan:null} for new user; Stripe webhook customer.subscription.updated sets subscription_status='active' on matching stripe_customer_id; dedication quota starts at 5, decrements on POST, 6th POST returns 402 for non-subscriber, subscribers unlimited; dedications list sorted desc; delete only affects own dedications; families create/join/leave (last-owner-solo deletes family, non-owner leave keeps family) all work; /families/me returns members with picture & subscription_status, no _id; all v1 endpoints still pass; NO MongoDB _id leaks anywhere; all auth-required endpoints return 401 without Bearer.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_phase2.py",
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/phase2_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is ~620 lines — approaching the 700-line split threshold; consider modularising into routers (auth.py, subscription.py, dedications.py, families.py) as more Phase 3 features are added.",
+    "In /api/webhook/stripe, when STRIPE_WEBHOOK_SECRET is unset the endpoint parses JSON without signature verification — acceptable for local/dev testing but MUST be set before production deploy (add a bold TODO or refuse in prod env).",
+    "get_current_user tolerates a session with no expires_at (treats as valid). Since user_sessions has a TTL index on expires_at, missing field would never expire — enforce presence of expires_at during session insert (already done) but consider defensively rejecting docs without it.",
+    "_gen_family_code has a retry cap of 5 attempts on collision — with 6-char alnum (~2.2B combinations) this is fine, but a duplicate-key exception on the unique index is currently unhandled if all 5 collide. Very low probability, minor.",
+    "In /families/join, response includes fam populated in-memory but does NOT re-query MongoDB — this is fine, but member_ids list may be appended twice on race conditions (idempotency guarded by 'if user_id not in fam.member_ids'). Acceptable.",
+    "@app.on_event('startup'/'shutdown') is deprecated in current FastAPI — migrate to lifespan handler eventually."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_phase2.py (new, 28 tests)",
+    "/app/test_reports/iteration_2.json (new)",
+    "/app/test_reports/pytest/phase2_results.xml (new)"
+  ],
+  "success_rate": {
+    "backend": "100% (28/28)",
+    "frontend": "N/A (not requested)"
+  },
+  "seed_data_creation": "Directly inserted TEST_phase2_* users + user_sessions into MongoDB (users, user_sessions collections) via motor. All test data (users, sessions, dedications, families) cleaned up in a session-scoped autouse teardown fixture (_cleanup filters emails starting with 'TEST_phase2_'). Also cleaned tasbih docs with TEST_phase2_tas_* prefix.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend Phase 2 is fully green. All 28 Phase 2 tests + 8 Phase 1 tests pass (36 total backend tests). Base URL: https://covenant-app-4.preview.emergentagent.com/api. To seed a test user in future runs, insert into db.users (with user_id, email, subscription_status, free_dedications_used=0, free_dedications_period_start=now) and db.user_sessions (session_token, user_id, expires_at future). Use Bearer <session_token> in Authorization header. STRIPE_WEBHOOK_SECRET is unset → webhook parses without signature verification (dev mode). Stripe test key sk_test_emergent successfully creates real Stripe checkout sessions. Emergent /auth/session was validated for the 401 path only (the 200 path requires a real Google OAuth flow and cannot be tested from a headless script).",
+  "rca_of_issue": "N/A — 28/28 tests passed on first run, no bugs found."
+}

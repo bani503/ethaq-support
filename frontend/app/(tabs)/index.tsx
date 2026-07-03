@@ -8,6 +8,7 @@ import {
   ImageBackground,
   RefreshControl,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,6 +17,7 @@ import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 
 import { theme } from "@/src/theme";
+import { useAuth } from "@/src/auth";
 import {
   fetchPrayerTimes,
   getNextPrayer,
@@ -35,6 +37,7 @@ const FALLBACK_CITY = "مكة المكرمة";
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [prayerData, setPrayerData] = useState<PrayerData | null>(null);
@@ -123,9 +126,20 @@ export default function HomeScreen() {
       >
         {/* Top greeting */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.appName} testID="app-name">إيثاق</Text>
-            <Text style={styles.appSub}>وعدك مع الله</Text>
+          <View style={styles.headerLeft}>
+            <TouchableOpacity onPress={() => router.push("/profile")} testID="profile-btn">
+              {user?.picture ? (
+                <Image source={{ uri: user.picture }} style={styles.avatar} />
+              ) : (
+                <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                  <Ionicons name={user ? "person" : "person-outline"} size={18} color="#fff" />
+                </View>
+              )}
+            </TouchableOpacity>
+            <View>
+              <Text style={styles.appName} testID="app-name">إيثاق</Text>
+              <Text style={styles.appSub}>{user?.name ? `أهلاً ${user.name.split(" ")[0]}` : "وعدك مع الله"}</Text>
+            </View>
           </View>
           <View style={styles.locationChip}>
             <Ionicons name="location" size={14} color={theme.colors.primary} />
@@ -262,6 +276,22 @@ export default function HomeScreen() {
             testID="bento-qibla"
           />
           <BentoCard
+            title="إهداء الدعاء"
+            subtitle="لمن تحب"
+            icon="heart-outline"
+            color={theme.colors.danger}
+            onPress={() => router.push("/dedications")}
+            testID="bento-dedications"
+          />
+          <BentoCard
+            title="أسرة إيثاق"
+            subtitle="مع من تحب"
+            icon="people-outline"
+            color="#5B4FCF"
+            onPress={() => router.push("/family")}
+            testID="bento-family"
+          />
+          <BentoCard
             title="أسماء الله الحسنى"
             subtitle="99 اسمًا"
             icon="sparkles-outline"
@@ -323,6 +353,22 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingTop: 8,
     paddingBottom: 16,
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    flex: 1,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  avatarPlaceholder: {
+    backgroundColor: theme.colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
   },
   appName: {
     fontSize: 28,
