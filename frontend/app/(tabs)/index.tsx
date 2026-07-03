@@ -228,6 +228,38 @@ export default function HomeScreen() {
         </View>
         <View style={styles.bento}>
           <BentoCard
+            title="القرآن"
+            subtitle="اقرأ واستمع"
+            icon="book-outline"
+            color={theme.colors.primary}
+            onPress={() => router.push("/(tabs)/quran")}
+            testID="bento-quran"
+          />
+          <BentoCard
+            title="الأذكار"
+            subtitle="صباحاً ومساءً"
+            icon="flower-outline"
+            color={theme.colors.gold}
+            onPress={() => router.push("/(tabs)/adhkar")}
+            testID="bento-adhkar"
+          />
+          <BentoCard
+            title="المسبحة"
+            subtitle="سبّح واذكر"
+            icon="ellipse-outline"
+            color={theme.colors.primary}
+            onPress={() => router.push("/tasbih")}
+            testID="bento-tasbih"
+          />
+          <BentoCard
+            title="القبلة"
+            subtitle="جهة الكعبة"
+            icon="compass-outline"
+            color={theme.colors.gold}
+            onPress={() => router.push("/(tabs)/qibla")}
+            testID="bento-qibla"
+          />
+          <BentoCard
             title="مفكرة الصلوات"
             subtitle="تتبّع صلواتك"
             icon="calendar-outline"
@@ -242,38 +274,6 @@ export default function HomeScreen() {
             color={theme.colors.gold}
             onPress={() => router.push("/nawawi")}
             testID="bento-nawawi"
-          />
-          <BentoCard
-            title="المسبحة"
-            subtitle="سبّح واذكر"
-            icon="ellipse-outline"
-            color={theme.colors.primary}
-            onPress={() => router.push("/tasbih")}
-            testID="bento-tasbih"
-          />
-          <BentoCard
-            title="الأذكار"
-            subtitle="صباحاً ومساءً"
-            icon="flower-outline"
-            color={theme.colors.gold}
-            onPress={() => router.push("/(tabs)/adhkar")}
-            testID="bento-adhkar"
-          />
-          <BentoCard
-            title="القرآن"
-            subtitle="اقرأ واستمع"
-            icon="book-outline"
-            color={theme.colors.primary}
-            onPress={() => router.push("/(tabs)/quran")}
-            testID="bento-quran"
-          />
-          <BentoCard
-            title="القبلة"
-            subtitle="جهة الكعبة"
-            icon="compass-outline"
-            color={theme.colors.gold}
-            onPress={() => router.push("/(tabs)/qibla")}
-            testID="bento-qibla"
           />
           <BentoCard
             title="إهداء الدعاء"
