@@ -1,0 +1,99 @@
+{
+  "theme": "Light",
+  "archetype": "Archetype 1 (Organic & Earthy) blended with premium Islamic elegance (Luxury)",
+  "global_rules": {
+    "direction": "rtl",
+    "language": "ar"
+  },
+  "typography": {
+    "font_families": {
+      "sans": "'Tajawal', sans-serif",
+      "serif": "'Amiri', serif"
+    },
+    "scale": {
+      "h1": "text-4xl sm:text-5xl font-serif tracking-tight",
+      "h2": "text-2xl sm:text-3xl font-serif",
+      "h3": "text-xl sm:text-2xl font-sans font-bold",
+      "body": "text-base font-sans leading-relaxed",
+      "small": "text-sm font-sans"
+    },
+    "font_imports": [
+      "@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700;800&display=swap');"
+    ]
+  },
+  "colors": {
+    "background": "#FDFBF7",
+    "surface": "#FFFFFF",
+    "primary": "#0F4C3A",
+    "primary_hover": "#0A3629",
+    "accent_gold": "#D4AF37",
+    "text_primary": "#1A1C18",
+    "text_secondary": "#5C6656",
+    "border": "#E8EAE3"
+  },
+  "spacing_and_layout": {
+    "container": "max-w-md mx-auto min-h-screen relative overflow-hidden bg-[#FDFBF7] shadow-2xl pb-24",
+    "padding": "p-5 sm:p-6",
+    "border_radius": "rounded-3xl",
+    "shadows": {
+      "soft": "shadow-[0_8px_30px_rgb(0,0,0,0.04)]",
+      "glass": "shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
+    }
+  },
+  "components": {
+    "bottom_nav": {
+      "style": "fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/90 backdrop-blur-xl border-t border-[#E8EAE3] pb-6 pt-3 px-6 flex justify-between items-center z-50 rounded-t-3xl",
+      "active_item": "text-[#0F4C3A] font-bold",
+      "inactive_item": "text-[#5C6656]"
+    },
+    "hero_prayer_card": {
+      "style": "relative w-full rounded-3xl overflow-hidden bg-gradient-to-br from-[#0F4C3A] to-[#0A3629] p-6 text-white mb-6 shadow-xl",
+      "image_overlay": "absolute inset-0 bg-black/20 mix-blend-overlay object-cover z-0 w-full h-full",
+      "content_wrapper": "relative z-10 flex flex-col items-start gap-2"
+    },
+    "bento_widget": {
+      "style": "bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#E8EAE3]/50 flex flex-col gap-3 transition-transform active:scale-95"
+    }
+  },
+  "media": {
+    "images": [
+      {
+        "category": "hero_prayer_background",
+        "url": "https://images.unsplash.com/photo-1554147090-e1221a04a025",
+        "description": "Abstract white sand dunes for a serene, pure prayer background."
+      },
+      {
+        "category": "quran_or_mosque_header",
+        "url": "https://images.pexels.com/photos/29903474/pexels-photo-29903474.jpeg",
+        "description": "Intricate Islamic architecture and arches for the Quran or Mosque section header."
+      },
+      {
+        "category": "night_adhkar_background",
+        "url": "https://images.pexels.com/photos/17860193/pexels-photo-17860193.jpeg",
+        "description": "Moon in dark clouds for evening adhkar or night mode."
+      }
+    ],
+    "icons": {
+      "library": "lucide-react",
+      "usage_rules": "Use stroke-width 1.5. Flip direction-based icons (like arrows) since the app is RTL."
+    }
+  },
+  "interactions": {
+    "hover": "transition-all duration-300 ease-out",
+    "active": "active:scale-95",
+    "page_transition": "animate-in fade-in slide-in-from-bottom-4 duration-500"
+  },
+  "instructions_to_main_agent": [
+    "Implement the app as a mobile-first web app imitating a React Native Expo app. Wrap everything in a `max-w-md mx-auto min-h-screen relative shadow-2xl` container so it looks like a mobile phone screen on desktop browsers.",
+    "CRITICAL: Add `dir='rtl'` to the root container. All text and layouts must be strictly right-to-left.",
+    "Use 'Tajawal' for all UI text, buttons, and descriptions. Use 'Amiri' for large Arabic headings, Islamic quotes, and Quranic verses.",
+    "Inject the Google Fonts import into the global CSS.",
+    "The Hero Section on the Home tab should be a prominent prayer card showing the next prayer time (e.g., 'صلاة العصر' - Asr) and a countdown. Use the `hero_prayer_background` image with an absolute positioning, `object-cover`, and a soft black overlay (`bg-black/30`) over the `primary` green container.",
+    "Build a Bento Grid layout for the main dashboard: A wide prominent card for the 'Daily Hadith' (الحديث اليومي), a square widget for 'Digital Tasbih' (المسبحة), and a square widget for 'Qibla' (القبلة).",
+    "Implement a persistent Bottom Navigation bar with 5 items: الرئيسية (Home), القرآن (Quran), الأذكار (Adhkar), القبلة (Qibla), إيثاق AI (AI Assistant). Make sure it respects bottom safe area by adding `pb-6`.",
+    "For the 'Digital Tasbih' view, create a large, satisfying circular button in the center with a ripple animation effect and a prominent counter.",
+    "For the AI Assistant feature, build a chat interface that looks clean and supportive, tailored for answering Islamic fiqh questions.",
+    "Make sure EVERY interactive element (buttons, tabs, widgets) includes a `data-testid` attribute (e.g., `data-testid='tab-home'`, `data-testid='tasbih-increment-btn'`).",
+    "Avoid generic gray backgrounds. Use the designated warm off-white (#FDFBF7) background to maintain a paper-like, sacred, and organic feel."
+  ]
+}
