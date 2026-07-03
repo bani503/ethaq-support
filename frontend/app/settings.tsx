@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -11,9 +11,12 @@ import {
   getAdhanSettings,
   saveAdhanSettings,
   DEFAULT_ADHAN_SETTINGS,
-  ADHAN_MP3_URL,
+  MUEZZIN_OPTIONS,
+  getMuezzin,
+  setSelectedMuezzin,
   type AdhanSettings,
 } from "@/src/utils/adhan";
+import { storage } from "@/src/utils/storage";
 
 const PRAYERS: PrayerName[] = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 const IQAMAH_OPTIONS = [5, 10, 15, 20, 25, 30];
@@ -21,16 +24,26 @@ const IQAMAH_OPTIONS = [5, 10, 15, 20, 25, 30];
 export default function SettingsScreen() {
   const router = useRouter();
   const [settings, setSettings] = useState<AdhanSettings>(DEFAULT_ADHAN_SETTINGS);
+  const [muezzinId, setMuezzinId] = useState<string>(MUEZZIN_OPTIONS[0].id);
   const [loaded, setLoaded] = useState(false);
-  const player = useAudioPlayer(ADHAN_MP3_URL);
+  const muezzin = useMemo(() => getMuezzin(muezzinId), [muezzinId]);
+  const player = useAudioPlayer(muezzin.url);
 
   useEffect(() => {
     (async () => {
       const s = await getAdhanSettings();
       setSettings(s);
+      const m = await storage.getItem<string>("muezzin_id", MUEZZIN_OPTIONS[0].id);
+      setMuezzinId(m || MUEZZIN_OPTIONS[0].id);
       setLoaded(true);
     })();
   }, []);
+
+  const chooseMuezzin = async (id: string) => {
+    try { player.pause(); } catch {}
+    setMuezzinId(id);
+    await setSelectedMuezzin(id);
+  };
 
   const update = async (next: AdhanSettings) => {
     setSettings(next);
@@ -126,8 +139,37 @@ export default function SettingsScreen() {
           ))}
         </View>
 
+        {/* Muezzin picker */}
+        <Text style={styles.sectionLabel}>اختيار المؤذن</Text>
+        <View style={styles.muezzinList}>
+          {MUEZZIN_OPTIONS.map((m) => {
+            const selected = m.id === muezzinId;
+            return (
+              <TouchableOpacity
+                key={m.id}
+                onPress={() => chooseMuezzin(m.id)}
+                style={[styles.muezzinRow, selected && styles.muezzinRowActive]}
+                testID={`muezzin-${m.id}`}
+              >
+                <View style={[styles.muezzinRadio, selected && styles.muezzinRadioActive]}>
+                  {selected && <Ionicons name="checkmark" size={14} color="#fff" />}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.muezzinName, selected && styles.muezzinNameActive]}>{m.name}</Text>
+                  <Text style={styles.muezzinDesc}>{m.desc}</Text>
+                </View>
+                <Ionicons
+                  name="musical-notes"
+                  size={18}
+                  color={selected ? theme.colors.gold : theme.colors.textMuted}
+                />
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
         {/* Test adhan */}
-        <Text style={styles.sectionLabel}>تجربة صوت الأذان</Text>
+        <Text style={styles.sectionLabel}>تجربة صوت {muezzin.name}</Text>
         <View style={styles.audioBtnRow}>
           <TouchableOpacity style={styles.playBtn} onPress={testAdhan} testID="test-adhan-play">
             <Ionicons name="play" size={18} color="#fff" />
@@ -237,5 +279,46 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     textAlign: "right",
     lineHeight: 20,
+  },
+  muezzinList: { gap: 8 },
+  muezzinRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 14,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  muezzinRowActive: {
+    backgroundColor: theme.colors.primaryLight,
+    borderColor: theme.colors.primary,
+  },
+  muezzinRadio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: theme.colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  muezzinRadioActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  muezzinName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: theme.colors.textPrimary,
+    textAlign: "right",
+  },
+  muezzinNameActive: { color: theme.colors.primary },
+  muezzinDesc: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
+    textAlign: "right",
   },
 });

@@ -120,6 +120,69 @@ export async function scheduleAdhanForTimings(timings: Timings, settings: AdhanS
   }
 }
 
-// Adhan MP3 CDN (Mishary Alafasy)
-export const ADHAN_MP3_URL = "https://www.islamcan.com/audio/adhan/azan1.mp3";
-export const IQAMAH_MP3_URL = "https://www.islamcan.com/audio/adhan/azan2.mp3";
+// Adhan MP3 CDN — multiple muezzins (islamcan.com public catalogue)
+export interface MuezzinOption {
+  id: string;
+  name: string;
+  desc: string;
+  url: string;
+  iqamahUrl?: string;
+}
+
+export const MUEZZIN_OPTIONS: MuezzinOption[] = [
+  {
+    id: "makkah",
+    name: "المسجد الحرام",
+    desc: "الشيخ علي أحمد ملا",
+    url: "https://www.islamcan.com/audio/adhan/azan2.mp3",
+    iqamahUrl: "https://www.islamcan.com/audio/adhan/azan13.mp3",
+  },
+  {
+    id: "madinah",
+    name: "المسجد النبوي",
+    desc: "أذان المدينة المنورة",
+    url: "https://www.islamcan.com/audio/adhan/azan10.mp3",
+  },
+  {
+    id: "afasy",
+    name: "الشيخ مشاري العفاسي",
+    desc: "بصوت هادئ وجميل",
+    url: "https://www.islamcan.com/audio/adhan/azan14.mp3",
+  },
+  {
+    id: "egypt",
+    name: "الأذان المصري",
+    desc: "على المقام النهاوند",
+    url: "https://www.islamcan.com/audio/adhan/azan5.mp3",
+  },
+  {
+    id: "turkey",
+    name: "الأذان التركي",
+    desc: "أنقرة العثمانية",
+    url: "https://www.islamcan.com/audio/adhan/azan4.mp3",
+  },
+  {
+    id: "fajr",
+    name: "أذان الفجر",
+    desc: "الصلاة خير من النوم",
+    url: "https://www.islamcan.com/audio/adhan/azan1.mp3",
+  },
+];
+
+export const DEFAULT_MUEZZIN_ID = "makkah";
+
+export function getMuezzin(id?: string | null): MuezzinOption {
+  return MUEZZIN_OPTIONS.find((m) => m.id === id) || MUEZZIN_OPTIONS[0];
+}
+
+export async function getSelectedMuezzin(): Promise<MuezzinOption> {
+  const id = await storage.getItem<string>("muezzin_id", DEFAULT_MUEZZIN_ID);
+  return getMuezzin(id || DEFAULT_MUEZZIN_ID);
+}
+
+export async function setSelectedMuezzin(id: string) {
+  await storage.setItem("muezzin_id", id);
+}
+
+export const ADHAN_MP3_URL = MUEZZIN_OPTIONS[0].url;
+export const IQAMAH_MP3_URL = "https://www.islamcan.com/audio/adhan/azan13.mp3";
